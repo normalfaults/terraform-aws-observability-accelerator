@@ -48,7 +48,6 @@ locals {
   }
 }
 
-# deploys the base module
 module "eks_observability_accelerator" {
   # source = "aws-observability/terrarom-aws-observability-accelerator"
   source = "../../"
@@ -80,17 +79,13 @@ module "eks_observability_accelerator" {
   tags = local.tags
 }
 
-# https://www.terraform.io/language/modules/develop/providers
-# A module intended to be called by one or more other modules must not contain
-# any provider blocks.
-# This allows forcing dependency between base and workloads module
 provider "grafana" {
   url  = module.eks_observability_accelerator.managed_grafana_workspace_endpoint
   auth = var.grafana_api_key
 }
 
-module "workloads_infra" {
-  source = "../../modules/workloads/infra"
+module "workloads_nginx" {
+  source = "../../modules/workloads/nginx"
 
   eks_cluster_id = module.eks_observability_accelerator.eks_cluster_id
 
@@ -101,7 +96,7 @@ module "workloads_infra" {
   managed_prometheus_workspace_region   = module.eks_observability_accelerator.managed_prometheus_workspace_region
 
   tags = local.tags
-  
+
   depends_on = [
     module.eks_observability_accelerator
   ]
